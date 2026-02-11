@@ -1,103 +1,69 @@
-# AprilArm 🪽 (🏅 Winner of HuggingFace LeRobot Hackathon 2025)
-## _By Susheendhar Vijay, Nidhin Ninan, and Mohammed Rashad_
-### Zero-cost leader arm for the SO-100
+# AprilArm
 
-> Why buy expensive motors just to read joint angles?
+**Winner, HuggingFace LeRobot Hackathon 2025 (Top 10%, #24 of 250+ submissions)**
 
-Cost-effective robotic teleoperation using **AprilTags** with a **3D printed controller** to control simulated and real SO-100 robots. Replaces expensive leader-follower setups, halving the cost for imitation learning.
+Zero-cost leader arm for SO-100 teleoperation. Uses AprilTag pose estimation with a 3D-printed controller to replace expensive leader-follower setups, cutting hardware costs in half.
 
-### Required hardware:
-- SO-100 robot follower arm
-- 3D printed handheld controller (just a hollow cube with a grip)
-- Webcam
+*Susheendhar Vijay, Nidhin Ninan, Mohammed Rashad*
 
-## 🎬 Demo (brain rot version)
-[`1 Min Demo Video`](https://github.com/user-attachments/assets/e8480acb-b422-40d0-b512-5118c11b4a0e)
+## Demo
 
+[1 Min Demo Video](https://github.com/user-attachments/assets/e8480acb-b422-40d0-b512-5118c11b4a0e)
 
-## 💰 Cost Comparison
+## Cost
 
-| Traditional Setup | Our AprilTag System |
-|------------------|-------------------|
-| Leader Arm: $100+ & controller | 3D Printed Controller: $5 |
-| Follower Arm: $100+ & controller | 122$ & controller |
-| **Total: $230** | **Total: $127** |
+| Traditional Setup | AprilArm |
+|------------------|----------|
+| Leader arm + controller: ~$110 | 3D-printed controller: $5 |
+| Follower arm + controller: ~$120 | Follower arm + controller: $122 |
+| **Total: ~$230** | **Total: $127** |
 
-## 🔧 System Architecture
-**Hardware**: 3D printed controller with AprilTags, webcam, SO-100 robot  
-**Software**: AprilTag detection, MuJoCo simulation
+## Requirements
 
-## 🛠 Setup
+- SO-100 follower arm
+- 3D-printed handheld controller (STL in `/assets/`)
+- USB webcam
+- Python 3.10+
 
-**Prerequisites**: Python 3.10+, USB webcam
+## Setup
+```bash
+uv sync  # or: pip install mujoco opencv-contrib-python scipy lerobot[feetech]
+```
 
-1. **Install dependencies**:
-   ```bash
-   uv sync  # or pip install mujoco opencv-contrib-python scipy lerobot[feetech]
-   ```
+Print the controller from `/assets/` and attach 46mm AprilTags (DICT_APRILTAG_16h5, IDs 0-5).
 
-2. **3D print controller**: Print cube from `/assets/`, attach 46mm AprilTags (DICT_APRILTAG_16h5, IDs 0-5)
+Calibrate your camera:
+```bash
+python calibrate.py
+```
 
-3. **Calibrate camera**:
-   ```bash
-   python calibrate.py
-   ```
+On macOS:
+```bash
+bash mjpy-init.sh
+```
 
-4. **Setup mjpython(macOS)**( :
-   ```bash
-   bash mjpy-init.sh
-   ```
-
-## 🚀 Usage
-
-**Main application**:
+## Usage
 ```bash
 mjpython main.py
 ```
 
-**Individual components**:
-```bash
-uv run april.py          # AprilTag detection only
-uv run mujoco_loop.py     # MuJoCo simulation only
-```
+Controls: move controller to position end-effector, `u`/`j` for gripper, `ESC` to exit.
 
-**Controls**:
-- **Hand movement**: Move controller to control robot end-effector
-- **u/j keys**: Open/close gripper (while focusing cursor in terminal)
-- **ESC/Q**: Exit
+## How It Works
 
-## 🧠 How It Works
+AprilTag detection runs in one thread, MuJoCo simulation in another, communicating via queue. The system fuses multi-face pose estimates with temporal smoothing, then applies Jacobian-based inverse kinematics with gravity compensation.
 
-**AprilTag Detection**: Multi-face detection, pose fusion, temporal smoothing, coordinate transformation
+## Files
 
-**Robot Control**: Inverse kinematics, Jacobian-based control, gravity compensation, joint limits
-
-**Architecture**: Two parallel threads communicate via queue - AprilTag detection (`april.py`) and MuJoCo simulation (`mujoco_loop.py`) for real-time performance
-
-## 📁 Files
-
-- `main.py` - Main application
-- `april.py` - AprilTag detection 
-- `mujoco_loop.py` - MuJoCo simulation
-- `calibrate.py` - Camera calibration
-- `scene.xml` - MuJoCo scene
-- `so_arm100.xml` - Robot model
-- `assets/` - 3D printable STL files
-
-## 🔬 Technical Details
-
-**AprilTags**: DICT_APRILTAG_16h5 family, 46mm size, IDs 0-5  
-
-## 🎓 Applications
-
-- Robotics education
-- Research data collection  
-- Behavior prototyping
-- Remote teleoperation
-
-## 💡 Hackathon Update
-We are happy to share that this project was one of the winners of the [HuggingFace LeRobot Hackathon 2025](https://huggingface.co/spaces/LeRobot-worldwide-hackathon/all-winners), where we placed **#24** from over 250+ submissions worldwide **(Top 10%)**, and won a [LeKiwi](https://github.com/SIGRobotics-UIUC/LeKiwi) as a result. We thank [HuggingFace](https://huggingface.co/) and [Seeedstudio](https://www.seeedstudio.com/) for this award.
+| File | Purpose |
+|------|---------|
+| `main.py` | Entry point |
+| `april.py` | AprilTag detection |
+| `mujoco_loop.py` | MuJoCo simulation and IK |
+| `calibrate.py` | Camera calibration |
+| `assets/` | Printable STLs |
 
 ---
 
-**Built with**: Python, OpenCV, MuJoCo, NumPy, SciPy
+Built with Python, OpenCV, MuJoCo, NumPy, SciPy
+
